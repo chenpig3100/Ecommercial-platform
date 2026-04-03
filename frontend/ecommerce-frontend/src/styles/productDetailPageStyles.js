@@ -77,6 +77,7 @@ const productDetailPageStyles = {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
     gap: "1rem",
+    marginBottom: "1.5rem",
   },
   infoCard: {
     padding: "1rem",
@@ -99,6 +100,51 @@ const productDetailPageStyles = {
   error: {
     color: "#b42318",
     marginBottom: "1rem",
+  },
+  purchasePanel: {
+    padding: "1.25rem",
+    borderRadius: "20px",
+    backgroundColor: "white",
+    border: "1px solid #ecdcc8",
+  },
+  quantityRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.9rem",
+    marginBottom: "1rem",
+    flexWrap: "wrap",
+  },
+  quantityLabel: {
+    fontWeight: "700",
+    color: "#6b492e",
+  },
+  quantityInput: {
+    width: "110px",
+    padding: "0.75rem 0.9rem",
+    borderRadius: "14px",
+    border: "1px solid #cdb597",
+    fontSize: "1rem",
+  },
+  addToCartButton: {
+    width: "100%",
+    padding: "0.95rem 1.25rem",
+    borderRadius: "999px",
+    border: "none",
+    backgroundColor: "#7f4f24",
+    color: "#fffaf4",
+    cursor: "pointer",
+    fontWeight: "700",
+    fontSize: "1rem",
+  },
+  success: {
+    margin: "0.9rem 0 0",
+    color: "#217a4c",
+    fontWeight: "600",
+  },
+  errorText: {
+    margin: "0.9rem 0 0",
+    color: "#b42318",
+    fontWeight: "600",
   },
 };
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getProductById } from "../api/products";
+import { useCart } from "../context/CartContext";
 import styles from "../styles/productDetailPageStyles";
 
 function formatPrice(price) {
@@ -12,9 +13,14 @@ function formatPrice(price) {
 
 export default function ProductDetailPage() {
   const { id } = useParams();
+  const { addItem } = useCart();
   const [product, setProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [quantity, setQuantity] = useState(1);
+  const [cartMessage, setCartMessage] = useState("");
+  const [cartError, setCartError] = useState("");
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   useEffect(() => {
     async function loadProduct() {
@@ -24,6 +30,7 @@ export default function ProductDetailPage() {
       try {
         const data = await getProductById(id);
         setProduct(data);
+        setQuantity(data.stock > 0 ? 1 : 0);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -52,6 +59,21 @@ export default function ProductDetailPage() {
   if (!product) {
     return null;
   }
+
+  const handleAddToCart = async () => {
+    setCartMessage("");
+    setCartError("");
+    setIsAddingToCart(true);
+
+    try {
+      await addItem(product.id, quantity);
+      setCartMessage("Item added to cart.");
+    } catch (err) {
+      setCartError(err.message);
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
 
   return (
     <main style={styles.page}>
@@ -84,6 +106,40 @@ export default function ProductDetailPage() {
               <strong>#{product.id}</strong>
             </div>
           </div>
+
+          <section style={styles.purchasePanel}>
+            <div style={styles.quantityRow}>
+              <label htmlFor="quantity" style={styles.quantityLabel}>
+                Quantity
+              </label>
+              <input
+                id="quantity"
+                type="number"
+                min="1"
+                max={product.stock}
+                value={quantity}
+                onChange={(event) => setQuantity(Number(event.target.value))}
+                style={styles.quantityInput}
+                disabled={product.stock === 0}
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              style={styles.addToCartButton}
+              disabled={product.stock === 0 || isAddingToCart}
+            >
+              {product.stock === 0
+                ? "Out of stock"
+                : isAddingToCart
+                  ? "Adding..."
+                  : "Add to cart"}
+            </button>
+
+            {cartMessage && <p style={styles.success}>{cartMessage}</p>}
+            {cartError && <p style={styles.errorText}>{cartError}</p>}
+          </section>
         </div>
       </section>
     </main>

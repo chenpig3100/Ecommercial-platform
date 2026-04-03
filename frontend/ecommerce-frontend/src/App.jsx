@@ -10,6 +10,9 @@ import UnauthorizedPage from "./pages/UnauthorizedPage";
 import SellerDashboardPage from "./pages/SellerDashboardPage";
 import SellerProductsPage from "./pages/SellerProductsPage";
 import SellerProductFormPage from "./pages/SellerProductFormPage";
+import CartPage from "./pages/CartPage";
+import CheckoutPage from "./pages/CheckoutPage";
+import OrderDetailPage from "./pages/OrderDetailPage";
 
 export default function App() {
   return (
@@ -22,6 +25,30 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/unauthorized" element={<UnauthorizedPage />} />
+        <Route
+          path="/cart"
+          element={
+            <ProtectedRoute>
+              <CartPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/checkout"
+          element={
+            <ProtectedRoute>
+              <CheckoutPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/orders/:id"
+          element={
+            <ProtectedRoute>
+              <OrderDetailPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/dashboard"
           element={

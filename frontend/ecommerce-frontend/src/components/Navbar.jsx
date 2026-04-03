@@ -1,9 +1,11 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useCart } from "../context/CartContext";
 import styles from "../styles/navBarStyles";
 
 export default function Navbar() {
   const { isAuthenticated, userEmail, roles, hasAnyRole, logout } = useAuth();
+  const { totalItems } = useCart();
   const navigate = useNavigate();
   const isSeller = hasAnyRole(["Seller", "Admin"]);
 
@@ -17,6 +19,11 @@ export default function Navbar() {
       <div style={styles.leftGroup}>
         <Link to="/" style={styles.brand}>Bryan Store</Link>
         <Link to="/products" style={styles.link}>Products</Link>
+        {isAuthenticated && (
+          <Link to="/cart" style={styles.link}>
+            Cart ({totalItems})
+          </Link>
+        )}
         {isAuthenticated && (
           <Link to="/dashboard" style={styles.link}>Dashboard</Link>
         )}
