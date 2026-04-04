@@ -51,6 +51,9 @@ export default function SellerDashboardPage() {
             </p>
           </div>
           <div style={styles.actionRow}>
+            <Link to="/seller/orders" style={styles.secondaryButton}>
+              Seller Orders
+            </Link>
             <Link to="/seller/products" style={styles.secondaryButton}>
               Manage Products
             </Link>

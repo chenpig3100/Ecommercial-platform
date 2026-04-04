@@ -13,6 +13,9 @@ import SellerProductFormPage from "./pages/SellerProductFormPage";
 import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import OrderDetailPage from "./pages/OrderDetailPage";
+import OrdersPage from "./pages/OrdersPage";
+import SellerOrdersPage from "./pages/SellerOrdersPage";
+import SellerOrderDetailPage from "./pages/SellerOrderDetailPage";
 
 export default function App() {
   return (
@@ -28,7 +31,7 @@ export default function App() {
         <Route
           path="/cart"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={["Buyer"]}>
               <CartPage />
             </ProtectedRoute>
           }
@@ -36,15 +39,23 @@ export default function App() {
         <Route
           path="/checkout"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={["Buyer"]}>
               <CheckoutPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/orders"
+          element={
+            <ProtectedRoute allowedRoles={["Buyer"]}>
+              <OrdersPage />
             </ProtectedRoute>
           }
         />
         <Route
           path="/orders/:id"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={["Buyer"]}>
               <OrderDetailPage />
             </ProtectedRoute>
           }
@@ -52,7 +63,7 @@ export default function App() {
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={["Buyer"]}>
               <DashboardPage />
             </ProtectedRoute>
           }
@@ -62,6 +73,22 @@ export default function App() {
           element={
             <ProtectedRoute allowedRoles={["Seller", "Admin"]}>
               <SellerDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/seller/orders"
+          element={
+            <ProtectedRoute allowedRoles={["Seller", "Admin"]}>
+              <SellerOrdersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/seller/orders/:id"
+          element={
+            <ProtectedRoute allowedRoles={["Seller", "Admin"]}>
+              <SellerOrderDetailPage />
             </ProtectedRoute>
           }
         />

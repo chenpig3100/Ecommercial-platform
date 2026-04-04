@@ -12,6 +12,8 @@ public class OrderItemDto
 
     public string? ImageUrl { get; set; }
 
+    public string? SellerEmail { get; set; }
+
     public int Quantity { get; set; }
 
     public decimal UnitPrice { get; set; }

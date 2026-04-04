@@ -31,4 +31,6 @@ public class Order
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 
     public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
+
+    public ICollection<SellerOrder> SellerOrders { get; set; } = new List<SellerOrder>();
 }

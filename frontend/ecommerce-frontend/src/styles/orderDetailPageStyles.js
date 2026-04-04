@@ -59,6 +59,20 @@ const orderDetailPageStyles = {
     lineHeight: 1.7,
     color: "#4f4035",
   },
+  subsectionTitle: {
+    margin: "1.5rem 0 0.9rem",
+    fontSize: "1.05rem",
+  },
+  shipmentList: {
+    display: "grid",
+    gap: "0.75rem",
+  },
+  shipmentCard: {
+    padding: "1rem",
+    borderRadius: "18px",
+    backgroundColor: "#fff",
+    border: "1px solid #ecdcc8",
+  },
   itemsList: {
     display: "grid",
     gap: "0.9rem",
@@ -96,6 +110,22 @@ const orderDetailPageStyles = {
     color: "#fffaf4",
     textDecoration: "none",
     fontWeight: "700",
+  },
+  secondaryLink: {
+    display: "inline-block",
+    marginTop: "1rem",
+    padding: "0.9rem 1.25rem",
+    borderRadius: "999px",
+    backgroundColor: "#ffffff",
+    color: "#7f4f24",
+    border: "1px solid #d9c4a8",
+    textDecoration: "none",
+    fontWeight: "700",
+  },
+  linkRow: {
+    display: "flex",
+    gap: "0.75rem",
+    flexWrap: "wrap",
   },
   status: {
     padding: "2rem",

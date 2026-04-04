@@ -14,6 +14,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Cart> Carts => Set<Cart>();
     public DbSet<CartItem> CartItems => Set<CartItem>();
     public DbSet<Order> Orders => Set<Order>();
+    public DbSet<SellerOrder> SellerOrders => Set<SellerOrder>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -64,6 +65,26 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
             .Property(order => order.TotalAmount)
             .HasPrecision(10, 2);
 
+        builder.Entity<SellerOrder>()
+            .HasOne(sellerOrder => sellerOrder.Order)
+            .WithMany(order => order.SellerOrders)
+            .HasForeignKey(sellerOrder => sellerOrder.OrderId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<SellerOrder>()
+            .HasOne(sellerOrder => sellerOrder.Seller)
+            .WithMany(user => user.SellerOrders)
+            .HasForeignKey(sellerOrder => sellerOrder.SellerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<SellerOrder>()
+            .Property(sellerOrder => sellerOrder.Status)
+            .HasDefaultValue(OrderStatus.Pending);
+
+        builder.Entity<SellerOrder>()
+            .Property(sellerOrder => sellerOrder.TotalAmount)
+            .HasPrecision(10, 2);
+
         builder.Entity<OrderItem>()
             .HasOne(item => item.Order)
             .WithMany(order => order.Items)
@@ -71,9 +92,21 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<OrderItem>()
+            .HasOne(item => item.SellerOrder)
+            .WithMany(sellerOrder => sellerOrder.Items)
+            .HasForeignKey(item => item.SellerOrderId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<OrderItem>()
             .HasOne(item => item.Product)
             .WithMany()
             .HasForeignKey(item => item.ProductId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<OrderItem>()
+            .HasOne<ApplicationUser>()
+            .WithMany()
+            .HasForeignKey(item => item.SellerId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.Entity<OrderItem>()

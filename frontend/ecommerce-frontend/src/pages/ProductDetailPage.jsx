@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getProductById } from "../api/products";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 import styles from "../styles/productDetailPageStyles";
 
 function formatPrice(price) {
@@ -14,6 +15,7 @@ function formatPrice(price) {
 export default function ProductDetailPage() {
   const { id } = useParams();
   const { addItem } = useCart();
+  const { isAuthenticated, isBuyer } = useAuth();
   const [product, setProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -108,37 +110,45 @@ export default function ProductDetailPage() {
           </div>
 
           <section style={styles.purchasePanel}>
-            <div style={styles.quantityRow}>
-              <label htmlFor="quantity" style={styles.quantityLabel}>
-                Quantity
-              </label>
-              <input
-                id="quantity"
-                type="number"
-                min="1"
-                max={product.stock}
-                value={quantity}
-                onChange={(event) => setQuantity(Number(event.target.value))}
-                style={styles.quantityInput}
-                disabled={product.stock === 0}
-              />
-            </div>
+            {isAuthenticated && isBuyer ? (
+              <>
+                <div style={styles.quantityRow}>
+                  <label htmlFor="quantity" style={styles.quantityLabel}>
+                    Quantity
+                  </label>
+                  <input
+                    id="quantity"
+                    type="number"
+                    min="1"
+                    max={product.stock}
+                    value={quantity}
+                    onChange={(event) => setQuantity(Number(event.target.value))}
+                    style={styles.quantityInput}
+                    disabled={product.stock === 0}
+                  />
+                </div>
 
-            <button
-              type="button"
-              onClick={handleAddToCart}
-              style={styles.addToCartButton}
-              disabled={product.stock === 0 || isAddingToCart}
-            >
-              {product.stock === 0
-                ? "Out of stock"
-                : isAddingToCart
-                  ? "Adding..."
-                  : "Add to cart"}
-            </button>
+                <button
+                  type="button"
+                  onClick={handleAddToCart}
+                  style={styles.addToCartButton}
+                  disabled={product.stock === 0 || isAddingToCart}
+                >
+                  {product.stock === 0
+                    ? "Out of stock"
+                    : isAddingToCart
+                      ? "Adding..."
+                      : "Add to cart"}
+                </button>
 
-            {cartMessage && <p style={styles.success}>{cartMessage}</p>}
-            {cartError && <p style={styles.errorText}>{cartError}</p>}
+                {cartMessage && <p style={styles.success}>{cartMessage}</p>}
+                {cartError && <p style={styles.errorText}>{cartError}</p>}
+              </>
+            ) : (
+              <p style={styles.errorText}>
+                Only buyer accounts can add items to cart and place orders.
+              </p>
+            )}
           </section>
         </div>
       </section>

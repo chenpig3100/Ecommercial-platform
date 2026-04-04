@@ -4,10 +4,9 @@ import { useCart } from "../context/CartContext";
 import styles from "../styles/navBarStyles";
 
 export default function Navbar() {
-  const { isAuthenticated, userEmail, roles, hasAnyRole, logout } = useAuth();
+  const { isAuthenticated, userEmail, roles, isBuyer, isSeller, logout } = useAuth();
   const { totalItems } = useCart();
   const navigate = useNavigate();
-  const isSeller = hasAnyRole(["Seller", "Admin"]);
 
   const handleLogout = () => {
     logout();
@@ -19,16 +18,22 @@ export default function Navbar() {
       <div style={styles.leftGroup}>
         <Link to="/" style={styles.brand}>Bryan Store</Link>
         <Link to="/products" style={styles.link}>Products</Link>
-        {isAuthenticated && (
+        {isAuthenticated && isBuyer && (
           <Link to="/cart" style={styles.link}>
             Cart ({totalItems})
           </Link>
         )}
-        {isAuthenticated && (
+        {isAuthenticated && isBuyer && (
           <Link to="/dashboard" style={styles.link}>Dashboard</Link>
+        )}
+        {isAuthenticated && isBuyer && (
+          <Link to="/orders" style={styles.link}>My Orders</Link>
         )}
         {isSeller && (
           <Link to="/seller/dashboard" style={styles.link}>Seller Dashboard</Link>
+        )}
+        {isSeller && (
+          <Link to="/seller/orders" style={styles.link}>Seller Orders</Link>
         )}
       </div>
 

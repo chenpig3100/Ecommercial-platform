@@ -45,3 +45,35 @@ export async function getMyOrders(token) {
 
   return parseResponse(response, "Unable to load orders");
 }
+
+export async function getSellerOrders(token, { status = "" } = {}) {
+  const params = new URLSearchParams();
+  if (status) {
+    params.set("status", status);
+  }
+
+  const query = params.toString();
+  const response = await fetch(`${API_BASE_URL}/seller/orders${query ? `?${query}` : ""}`, {
+    headers: createAuthHeaders(token),
+  });
+
+  return parseResponse(response, "Unable to load seller orders");
+}
+
+export async function getSellerOrderById(token, id) {
+  const response = await fetch(`${API_BASE_URL}/seller/orders/${id}`, {
+    headers: createAuthHeaders(token),
+  });
+
+  return parseResponse(response, "Unable to load seller order");
+}
+
+export async function updateSellerOrderStatus(token, id, payload) {
+  const response = await fetch(`${API_BASE_URL}/seller/orders/${id}/status`, {
+    method: "PUT",
+    headers: createAuthHeaders(token),
+    body: JSON.stringify(payload),
+  });
+
+  return parseResponse(response, "Unable to update seller order status");
+}

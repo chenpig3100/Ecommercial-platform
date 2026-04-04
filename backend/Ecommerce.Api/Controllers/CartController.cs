@@ -10,7 +10,7 @@ namespace Ecommerce.Api.Controllers;
 
 [ApiController]
 [Route("api/cart")]
-[Authorize]
+[Authorize(Roles = IdentitySeeder.BuyerRole)]
 public class CartController : ControllerBase
 {
     private readonly AppDbContext _context;

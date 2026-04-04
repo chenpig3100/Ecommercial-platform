@@ -20,13 +20,13 @@ const emptyCart = {
 };
 
 export function CartProvider({ children }) {
-  const { token, isAuthenticated } = useAuth();
+  const { token, isAuthenticated, isBuyer } = useAuth();
   const [cart, setCart] = useState(emptyCart);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!isAuthenticated || !token) {
+    if (!isAuthenticated || !token || !isBuyer) {
       setCart(emptyCart);
       setError("");
       setIsLoading(false);
@@ -60,10 +60,10 @@ export function CartProvider({ children }) {
     return () => {
       isMounted = false;
     };
-  }, [isAuthenticated, token]);
+  }, [isAuthenticated, isBuyer, token]);
 
   async function runCartAction(action) {
-    if (!token) {
+    if (!token || !isBuyer) {
       throw new Error("Please log in to manage your cart.");
     }
 

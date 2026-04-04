@@ -1,8 +1,10 @@
 namespace Ecommerce.Api.DTOs;
 
-public class OrderDto
+public class SellerOrderDto
 {
     public int Id { get; set; }
+
+    public int OrderId { get; set; }
 
     public string Status { get; set; } = string.Empty;
 
@@ -19,6 +21,4 @@ public class OrderDto
     public DateTime CreatedAtUtc { get; set; }
 
     public List<OrderItemDto> Items { get; set; } = [];
-
-    public List<SellerOrderDto> SellerOrders { get; set; } = [];
 }

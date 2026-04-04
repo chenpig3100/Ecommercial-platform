@@ -11,6 +11,15 @@ public class OrderItem
 
     public Order? Order { get; set; }
 
+    public int? SellerOrderId { get; set; }
+
+    public SellerOrder? SellerOrder { get; set; }
+
+    public string? SellerId { get; set; }
+
+    [MaxLength(256)]
+    public string? SellerEmail { get; set; }
+
     public int ProductId { get; set; }
 
     public Product? Product { get; set; }

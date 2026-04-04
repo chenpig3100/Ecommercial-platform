@@ -87,6 +87,26 @@ export default function OrderDetailPage() {
           <p style={styles.detailLine}>
             <strong>Address:</strong> {order.shippingAddress}
           </p>
+          {order.sellerOrders?.length > 0 && (
+            <>
+              <h3 style={styles.subsectionTitle}>Seller shipments</h3>
+              <div style={styles.shipmentList}>
+                {order.sellerOrders.map((sellerOrder) => (
+                  <div key={sellerOrder.id} style={styles.shipmentCard}>
+                    <p style={styles.detailLine}>
+                      <strong>Seller order:</strong> #{sellerOrder.id}
+                    </p>
+                    <p style={styles.detailLine}>
+                      <strong>Status:</strong> {sellerOrder.status}
+                    </p>
+                    <p style={styles.detailLine}>
+                      <strong>Items:</strong> {sellerOrder.totalItems}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
         <div style={styles.itemsCard}>
@@ -99,6 +119,7 @@ export default function OrderDetailPage() {
                   <p style={styles.itemMeta}>
                     Qty {item.quantity} x {formatPrice(item.unitPrice)}
                   </p>
+                  {item.sellerEmail && <p style={styles.itemMeta}>Seller: {item.sellerEmail}</p>}
                 </div>
                 <strong>{formatPrice(item.subtotal)}</strong>
               </article>
@@ -110,9 +131,14 @@ export default function OrderDetailPage() {
             <strong>{formatPrice(order.totalAmount)}</strong>
           </div>
 
-          <Link to="/products" style={styles.primaryLink}>
-            Continue shopping
-          </Link>
+          <div style={styles.linkRow}>
+            <Link to="/orders" style={styles.secondaryLink}>
+              Back to orders
+            </Link>
+            <Link to="/products" style={styles.primaryLink}>
+              Continue shopping
+            </Link>
+          </div>
         </div>
       </section>
     </main>

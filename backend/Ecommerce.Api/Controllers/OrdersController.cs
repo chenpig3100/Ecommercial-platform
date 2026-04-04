@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Ecommerce.Api.Data;
 using Ecommerce.Api.DTOs;
+using Ecommerce.Api.Mappings;
 using Ecommerce.Api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +11,7 @@ namespace Ecommerce.Api.Controllers;
 
 [ApiController]
 [Route("api/orders")]
-[Authorize]
+[Authorize(Roles = IdentitySeeder.BuyerRole)]
 public class OrdersController : ControllerBase
 {
     private readonly AppDbContext _context;
@@ -32,6 +33,7 @@ public class OrdersController : ControllerBase
         var cart = await _context.Carts
             .Include(cart => cart.Items)
             .ThenInclude(item => item.Product)
+            .ThenInclude(product => product!.Seller)
             .FirstOrDefaultAsync(cart => cart.UserId == userId);
 
         if (cart is null || cart.Items.Count == 0)
@@ -76,25 +78,56 @@ public class OrdersController : ControllerBase
 
         using var transaction = await _context.Database.BeginTransactionAsync();
 
+        var sellerGroups = cart.Items
+            .GroupBy(item => item.Product!.SellerId)
+            .ToList();
+
+        if (sellerGroups.Any(group => string.IsNullOrWhiteSpace(group.Key)))
+        {
+            return BadRequest(new
+            {
+                message = "One or more products are missing seller ownership and cannot be checked out."
+            });
+        }
+
         var order = new Order
         {
             UserId = userId,
             RecipientName = dto.RecipientName.Trim(),
             PhoneNumber = dto.PhoneNumber.Trim(),
             ShippingAddress = dto.ShippingAddress.Trim(),
-            Status = "Pending",
-            TotalAmount = cart.Items.Sum(item => item.UnitPrice * item.Quantity),
-            Items = cart.Items.Select(item => new OrderItem
-            {
-                ProductId = item.ProductId,
-                ProductName = item.Product!.Name,
-                Category = item.Product.Category,
-                ImageUrl = item.Product.ImageUrl,
-                Quantity = item.Quantity,
-                UnitPrice = item.UnitPrice,
-                Subtotal = item.UnitPrice * item.Quantity
-            }).ToList()
+            Status = OrderStatus.Pending,
+            TotalAmount = cart.Items.Sum(item => item.UnitPrice * item.Quantity)
         };
+
+        foreach (var sellerGroup in sellerGroups)
+        {
+            var sellerEmail = sellerGroup.First().Product?.Seller?.Email;
+            var sellerOrder = new SellerOrder
+            {
+                SellerId = sellerGroup.Key!,
+                Status = OrderStatus.Pending,
+                TotalAmount = sellerGroup.Sum(item => item.UnitPrice * item.Quantity),
+                Items = sellerGroup.Select(item => new OrderItem
+                {
+                    SellerId = sellerGroup.Key!,
+                    SellerEmail = sellerEmail,
+                    ProductId = item.ProductId,
+                    ProductName = item.Product!.Name,
+                    Category = item.Product.Category,
+                    ImageUrl = item.Product.ImageUrl,
+                    Quantity = item.Quantity,
+                    UnitPrice = item.UnitPrice,
+                    Subtotal = item.UnitPrice * item.Quantity
+                }).ToList()
+            };
+
+            order.SellerOrders.Add(sellerOrder);
+        }
+
+        order.Items = order.SellerOrders
+            .SelectMany(sellerOrder => sellerOrder.Items)
+            .ToList();
 
         _context.Orders.Add(order);
 
@@ -112,9 +145,11 @@ public class OrdersController : ControllerBase
         var savedOrder = await _context.Orders
             .AsNoTracking()
             .Include(order => order.Items)
+            .Include(order => order.SellerOrders)
+            .ThenInclude(sellerOrder => sellerOrder.Items)
             .FirstAsync(saved => saved.Id == order.Id && saved.UserId == userId);
 
-        return CreatedAtAction(nameof(GetOrderById), new { id = savedOrder.Id }, MapOrderDto(savedOrder));
+        return CreatedAtAction(nameof(GetOrderById), new { id = savedOrder.Id }, OrderDtoMapper.MapOrderDto(savedOrder));
     }
 
     [HttpGet]
@@ -130,10 +165,12 @@ public class OrdersController : ControllerBase
             .AsNoTracking()
             .Where(order => order.UserId == userId)
             .Include(order => order.Items)
+            .Include(order => order.SellerOrders)
+            .ThenInclude(sellerOrder => sellerOrder.Items)
             .OrderByDescending(order => order.CreatedAtUtc)
             .ToListAsync();
 
-        return Ok(orders.Select(MapOrderDto));
+        return Ok(orders.Select(OrderDtoMapper.MapOrderDto));
     }
 
     [HttpGet("{id:int}")]
@@ -149,6 +186,8 @@ public class OrdersController : ControllerBase
             .AsNoTracking()
             .Where(order => order.UserId == userId && order.Id == id)
             .Include(order => order.Items)
+            .Include(order => order.SellerOrders)
+            .ThenInclude(sellerOrder => sellerOrder.Items)
             .FirstOrDefaultAsync();
 
         if (order is null)
@@ -156,42 +195,11 @@ public class OrdersController : ControllerBase
             return NotFound(new { message = $"Order {id} was not found." });
         }
 
-        return Ok(MapOrderDto(order));
+        return Ok(OrderDtoMapper.MapOrderDto(order));
     }
 
     private string? GetCurrentUserId()
     {
         return User.FindFirstValue(ClaimTypes.NameIdentifier);
-    }
-
-    private static OrderDto MapOrderDto(Order order)
-    {
-        var items = order.Items
-            .OrderBy(item => item.Id)
-            .Select(item => new OrderItemDto
-            {
-                Id = item.Id,
-                ProductId = item.ProductId,
-                ProductName = item.ProductName,
-                Category = item.Category,
-                ImageUrl = item.ImageUrl,
-                Quantity = item.Quantity,
-                UnitPrice = item.UnitPrice,
-                Subtotal = item.Subtotal
-            })
-            .ToList();
-
-        return new OrderDto
-        {
-            Id = order.Id,
-            Status = order.Status,
-            RecipientName = order.RecipientName,
-            PhoneNumber = order.PhoneNumber,
-            ShippingAddress = order.ShippingAddress,
-            TotalAmount = order.TotalAmount,
-            TotalItems = items.Sum(item => item.Quantity),
-            CreatedAtUtc = order.CreatedAtUtc,
-            Items = items
-        };
     }
 }
