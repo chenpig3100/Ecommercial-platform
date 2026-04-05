@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Ecommerce.Api.Data;
 using Ecommerce.Api.DTOs;
+using Ecommerce.Api.Infrastructure.Errors;
 using Ecommerce.Api.Mappings;
 using Ecommerce.Api.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -27,7 +28,7 @@ public class OrdersController : ControllerBase
         var userId = GetCurrentUserId();
         if (string.IsNullOrWhiteSpace(userId))
         {
-            return Unauthorized(new { message = "User identity is missing." });
+            return this.ApiUnauthorized("User identity is missing.");
         }
 
         var cart = await _context.Carts
@@ -38,7 +39,7 @@ public class OrdersController : ControllerBase
 
         if (cart is null || cart.Items.Count == 0)
         {
-            return BadRequest(new { message = "Your cart is empty." });
+            return this.ApiBadRequest("Your cart is empty.");
         }
 
         var hasPriceChanged = false;
@@ -47,15 +48,13 @@ public class OrdersController : ControllerBase
         {
             if (cartItem.Product is null || !cartItem.Product.IsActive)
             {
-                return BadRequest(new { message = "One or more products are no longer available." });
+                return this.ApiBadRequest("One or more products are no longer available.");
             }
 
             if (cartItem.Product.Stock < cartItem.Quantity)
             {
-                return BadRequest(new
-                {
-                    message = "Some items are no longer available in the requested quantity. Please review your cart before checkout."
-                });
+                return this.ApiBadRequest(
+                    "Some items are no longer available in the requested quantity. Please review your cart before checkout.");
             }
 
             if (cartItem.UnitPrice != cartItem.Product.Price)
@@ -70,10 +69,11 @@ public class OrdersController : ControllerBase
             cart.UpdatedAtUtc = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
-            return Conflict(new
-            {
-                message = "Product price has changed. Please review your cart before checkout."
-            });
+            return Conflict(
+                ApiErrorResponseFactory.Create(
+                    HttpContext,
+                    StatusCodes.Status409Conflict,
+                    "Product price has changed. Please review your cart before checkout."));
         }
 
         using var transaction = await _context.Database.BeginTransactionAsync();
@@ -84,10 +84,8 @@ public class OrdersController : ControllerBase
 
         if (sellerGroups.Any(group => string.IsNullOrWhiteSpace(group.Key)))
         {
-            return BadRequest(new
-            {
-                message = "One or more products are missing seller ownership and cannot be checked out."
-            });
+            return this.ApiBadRequest(
+                "One or more products are missing seller ownership and cannot be checked out.");
         }
 
         var order = new Order
@@ -158,7 +156,7 @@ public class OrdersController : ControllerBase
         var userId = GetCurrentUserId();
         if (string.IsNullOrWhiteSpace(userId))
         {
-            return Unauthorized(new { message = "User identity is missing." });
+            return this.ApiUnauthorized("User identity is missing.");
         }
 
         var orders = await _context.Orders
@@ -179,7 +177,7 @@ public class OrdersController : ControllerBase
         var userId = GetCurrentUserId();
         if (string.IsNullOrWhiteSpace(userId))
         {
-            return Unauthorized(new { message = "User identity is missing." });
+            return this.ApiUnauthorized("User identity is missing.");
         }
 
         var order = await _context.Orders
@@ -192,7 +190,7 @@ public class OrdersController : ControllerBase
 
         if (order is null)
         {
-            return NotFound(new { message = $"Order {id} was not found." });
+            return this.ApiNotFound($"Order {id} was not found.");
         }
 
         return Ok(OrderDtoMapper.MapOrderDto(order));

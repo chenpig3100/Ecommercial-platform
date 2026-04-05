@@ -4,6 +4,8 @@ import { getProductById } from "../api/products";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import styles from "../styles/productDetailPageStyles";
+import LoadingState from "../components/LoadingState";
+import ErrorBanner from "../components/ErrorBanner";
 
 function formatPrice(price) {
   return new Intl.NumberFormat("en-US", {
@@ -44,13 +46,13 @@ export default function ProductDetailPage() {
   }, [id]);
 
   if (isLoading) {
-    return <p style={styles.status}>Loading product details...</p>;
+    return <LoadingState message="Loading product details..." />;
   }
 
   if (error) {
     return (
       <div style={styles.page}>
-        <p style={styles.error}>{error}</p>
+        <ErrorBanner message={error} />
         <Link to="/products" style={styles.backLink}>
           Back to products
         </Link>

@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Ecommerce.Api.Models;
 using Ecommerce.Api.Services;
+using Ecommerce.Api.Infrastructure.Errors;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,6 +51,12 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<TokenService>();
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+        new BadRequestObjectResult(
+            ApiErrorResponseFactory.FromModelState(context.HttpContext, context.ModelState));
+});
 
 // CORS
 builder.Services.AddCors(options =>
@@ -65,6 +73,8 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Middleware
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

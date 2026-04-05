@@ -3,6 +3,10 @@ import { Link, useParams } from "react-router-dom";
 import { getOrderById } from "../api/orders";
 import { useAuth } from "../context/AuthContext";
 import styles from "../styles/orderDetailPageStyles";
+import LoadingState from "../components/LoadingState";
+import ErrorBanner from "../components/ErrorBanner";
+import EmptyState from "../components/EmptyState";
+import StatusBadge from "../components/StatusBadge";
 
 function formatPrice(price) {
   return new Intl.NumberFormat("en-US", {
@@ -44,22 +48,29 @@ export default function OrderDetailPage() {
   }, [id, token]);
 
   if (isLoading) {
-    return <p style={styles.status}>Loading order details...</p>;
+    return <LoadingState message="Loading order details..." />;
   }
 
   if (error) {
     return (
       <main style={styles.page}>
-        <p style={styles.error}>{error}</p>
-        <Link to="/products" style={styles.primaryLink}>
-          Continue shopping
-        </Link>
+        <ErrorBanner message={error} />
+        <Link to="/products" style={styles.primaryLink}>Continue shopping</Link>
       </main>
     );
   }
 
   if (!order) {
-    return null;
+    return (
+      <main style={styles.page}>
+        <EmptyState
+          title="Order not found"
+          description="We could not find the order you were trying to open."
+          actionLabel="Back to orders"
+          actionTo="/orders"
+        />
+      </main>
+    );
   }
 
   return (
@@ -76,7 +87,7 @@ export default function OrderDetailPage() {
         <div style={styles.detailsCard}>
           <h2 style={styles.sectionTitle}>Delivery details</h2>
           <p style={styles.detailLine}>
-            <strong>Status:</strong> {order.status}
+            <strong>Status:</strong> <StatusBadge status={order.status} />
           </p>
           <p style={styles.detailLine}>
             <strong>Recipient:</strong> {order.recipientName}
@@ -97,7 +108,7 @@ export default function OrderDetailPage() {
                       <strong>Seller order:</strong> #{sellerOrder.id}
                     </p>
                     <p style={styles.detailLine}>
-                      <strong>Status:</strong> {sellerOrder.status}
+                      <strong>Status:</strong> <StatusBadge status={sellerOrder.status} />
                     </p>
                     <p style={styles.detailLine}>
                       <strong>Items:</strong> {sellerOrder.totalItems}

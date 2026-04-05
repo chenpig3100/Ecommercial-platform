@@ -142,6 +142,16 @@ const sellerPageStyles = {
     color: "#5b412d",
     fontWeight: "700",
   },
+  inputError: {
+    border: "1px solid #d46c5f",
+    boxShadow: "0 0 0 3px rgba(212,108,95,0.14)",
+  },
+  fieldError: {
+    margin: 0,
+    color: "#b42318",
+    fontSize: "0.9rem",
+    fontWeight: "600",
+  },
   twoColumnGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
@@ -259,6 +269,13 @@ const sellerPageStyles = {
     display: "flex",
     gap: "0.75rem",
     flexWrap: "wrap",
+  },
+  centeredActionRow: {
+    display: "flex",
+    gap: "0.75rem",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    alignItems: "center",
   },
   status: {
     padding: "2rem 0",

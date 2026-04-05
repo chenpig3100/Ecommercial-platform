@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { createProduct, getManagedProductById, updateProduct } from "../api/products";
 import { useAuth } from "../context/AuthContext";
 import styles from "../styles/sellerPageStyles";
+import { normalizeFieldErrors } from "../utils/formErrors";
 
 const initialFormState = {
   name: "",
@@ -14,6 +15,59 @@ const initialFormState = {
   isActive: true,
 };
 
+function isValidImageUrl(value) {
+  if (!value.trim()) {
+    return true;
+  }
+
+  try {
+    new URL(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function validateProductForm(formData) {
+  const errors = {};
+
+  if (!formData.name.trim()) {
+    errors.name = "Product name is required.";
+  } else if (formData.name.trim().length < 2) {
+    errors.name = "Product name must be at least 2 characters.";
+  }
+
+  if (!formData.description.trim()) {
+    errors.description = "Description is required.";
+  } else if (formData.description.trim().length < 10) {
+    errors.description = "Description must be at least 10 characters.";
+  }
+
+  if (!formData.category.trim()) {
+    errors.category = "Category is required.";
+  } else if (formData.category.trim().length < 2) {
+    errors.category = "Category must be at least 2 characters.";
+  }
+
+  if (formData.price === "") {
+    errors.price = "Price is required.";
+  } else if (!Number.isFinite(Number(formData.price)) || Number(formData.price) < 0) {
+    errors.price = "Price must be a number greater than or equal to 0.";
+  }
+
+  if (formData.stock === "") {
+    errors.stock = "Stock is required.";
+  } else if (!Number.isInteger(Number(formData.stock)) || Number(formData.stock) < 0) {
+    errors.stock = "Stock must be a whole number greater than or equal to 0.";
+  }
+
+  if (!isValidImageUrl(formData.imageUrl)) {
+    errors.imageUrl = "Image URL must be a valid absolute URL.";
+  }
+
+  return errors;
+}
+
 export default function SellerProductFormPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -24,6 +78,7 @@ export default function SellerProductFormPage() {
   const [isLoading, setIsLoading] = useState(isEditMode);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     if (!isEditMode) {
@@ -61,12 +116,28 @@ export default function SellerProductFormPage() {
       ...currentFormData,
       [name]: type === "checkbox" ? checked : value,
     }));
+    setFieldErrors((currentErrors) => {
+      if (!currentErrors[name]) {
+        return currentErrors;
+      }
+
+      const nextErrors = { ...currentErrors };
+      delete nextErrors[name];
+      return nextErrors;
+    });
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setIsSaving(true);
     setError("");
+    const validationErrors = validateProductForm(formData);
+    if (Object.keys(validationErrors).length > 0) {
+      setFieldErrors(validationErrors);
+      return;
+    }
+
+    setFieldErrors({});
+    setIsSaving(true);
 
     const payload = {
       name: formData.name.trim(),
@@ -87,6 +158,7 @@ export default function SellerProductFormPage() {
 
       navigate("/seller/products");
     } catch (err) {
+      setFieldErrors(normalizeFieldErrors(err.errors));
       setError(err.message);
     } finally {
       setIsSaving(false);
@@ -131,8 +203,12 @@ export default function SellerProductFormPage() {
               value={formData.name}
               onChange={handleChange}
               required
-              style={styles.input}
+              style={{
+                ...styles.input,
+                ...(fieldErrors.name ? styles.inputError : {}),
+              }}
             />
+            {fieldErrors.name && <p style={styles.fieldError}>{fieldErrors.name}</p>}
           </div>
 
           <div style={styles.fieldGroup}>
@@ -145,8 +221,15 @@ export default function SellerProductFormPage() {
               value={formData.description}
               onChange={handleChange}
               required
-              style={{ ...styles.input, ...styles.textarea }}
+              style={{
+                ...styles.input,
+                ...styles.textarea,
+                ...(fieldErrors.description ? styles.inputError : {}),
+              }}
             />
+            {fieldErrors.description && (
+              <p style={styles.fieldError}>{fieldErrors.description}</p>
+            )}
           </div>
 
           <div style={styles.twoColumnGrid}>
@@ -160,8 +243,12 @@ export default function SellerProductFormPage() {
                 value={formData.category}
                 onChange={handleChange}
                 required
-                style={styles.input}
+                style={{
+                  ...styles.input,
+                  ...(fieldErrors.category ? styles.inputError : {}),
+                }}
               />
+              {fieldErrors.category && <p style={styles.fieldError}>{fieldErrors.category}</p>}
             </div>
 
             <div style={styles.fieldGroup}>
@@ -173,8 +260,12 @@ export default function SellerProductFormPage() {
                 name="imageUrl"
                 value={formData.imageUrl}
                 onChange={handleChange}
-                style={styles.input}
+                style={{
+                  ...styles.input,
+                  ...(fieldErrors.imageUrl ? styles.inputError : {}),
+                }}
               />
+              {fieldErrors.imageUrl && <p style={styles.fieldError}>{fieldErrors.imageUrl}</p>}
             </div>
           </div>
 
@@ -192,8 +283,12 @@ export default function SellerProductFormPage() {
                 value={formData.price}
                 onChange={handleChange}
                 required
-                style={styles.input}
+                style={{
+                  ...styles.input,
+                  ...(fieldErrors.price ? styles.inputError : {}),
+                }}
               />
+              {fieldErrors.price && <p style={styles.fieldError}>{fieldErrors.price}</p>}
             </div>
 
             <div style={styles.fieldGroup}>
@@ -209,8 +304,12 @@ export default function SellerProductFormPage() {
                 value={formData.stock}
                 onChange={handleChange}
                 required
-                style={styles.input}
+                style={{
+                  ...styles.input,
+                  ...(fieldErrors.stock ? styles.inputError : {}),
+                }}
               />
+              {fieldErrors.stock && <p style={styles.fieldError}>{fieldErrors.stock}</p>}
             </div>
           </div>
 

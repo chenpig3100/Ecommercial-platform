@@ -3,6 +3,9 @@ import { Link, useParams } from "react-router-dom";
 import { getSellerOrderById, updateSellerOrderStatus } from "../api/orders";
 import { useAuth } from "../context/AuthContext";
 import sellerStyles from "../styles/sellerPageStyles";
+import LoadingState from "../components/LoadingState";
+import ErrorBanner from "../components/ErrorBanner";
+import StatusBadge from "../components/StatusBadge";
 
 function formatPrice(price) {
   return new Intl.NumberFormat("en-US", {
@@ -70,7 +73,7 @@ export default function SellerOrderDetailPage() {
   }
 
   if (isLoading) {
-    return <p style={sellerStyles.status}>Loading seller order...</p>;
+    return <LoadingState message="Loading seller order..." />;
   }
 
   if (!order) {
@@ -99,20 +102,18 @@ export default function SellerOrderDetailPage() {
             <p style={sellerStyles.helperText}>{order.shippingAddress}</p>
           </div>
           <div style={sellerStyles.actionRow}>
-            <span style={{ ...sellerStyles.statusBadge, ...sellerStyles.statusActive }}>
-              {order.status}
-            </span>
+            <StatusBadge status={order.status} />
             <Link to="/seller/orders" style={sellerStyles.secondaryButton}>
               Back to orders
             </Link>
           </div>
         </div>
 
-        {error && <p style={sellerStyles.error}>{error}</p>}
+        <ErrorBanner message={error} />
         {success && <p style={sellerStyles.success}>{success}</p>}
 
         {nextStatuses.length > 0 && (
-          <div style={sellerStyles.actionRow}>
+          <div style={sellerStyles.centeredActionRow}>
             {nextStatuses.map((status) => (
               <button
                 key={status}

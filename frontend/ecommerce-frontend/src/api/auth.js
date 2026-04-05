@@ -1,55 +1,19 @@
-import { API_BASE_URL } from "./config";
-
+import { apiRequest } from "./client";
 
 export async function registerUser(email, password) {
-  const response = await fetch(`${API_BASE_URL}/auth/register`, {
+  return apiRequest("/auth/register", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email, password }),
+    body: { email, password },
   });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message || data.errors?.[0] || "Register failed");
-  }
-
-  return data;
 }
 
 export async function loginUser(email, password) {
-  const response = await fetch(`${API_BASE_URL}/auth/login`, {
+  return apiRequest("/auth/login", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email, password }),
+    body: { email, password },
   });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message || "Login failed");
-  }
-
-  return data;
 }
 
 export async function getPrivateData(token) {
-  const response = await fetch(`${API_BASE_URL}/test/private`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message || "Unauthorized");
-  }
-
-  return data;
+  return apiRequest("/test/private", { token });
 }

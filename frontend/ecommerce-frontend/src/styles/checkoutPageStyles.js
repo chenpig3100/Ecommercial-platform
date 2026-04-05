@@ -96,6 +96,16 @@ const checkoutPageStyles = {
     resize: "vertical",
     boxSizing: "border-box",
   },
+  inputError: {
+    border: "1px solid #d46c5f",
+    boxShadow: "0 0 0 3px rgba(212,108,95,0.14)",
+  },
+  fieldError: {
+    margin: 0,
+    color: "#b42318",
+    fontSize: "0.9rem",
+    fontWeight: "600",
+  },
   submitButton: {
     width: "100%",
     padding: "0.95rem 1.25rem",

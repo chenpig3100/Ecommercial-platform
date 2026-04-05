@@ -59,13 +59,6 @@ const ordersPageStyles = {
     margin: 0,
     color: "#5b655c",
   },
-  statusBadge: {
-    padding: "0.45rem 0.8rem",
-    borderRadius: "999px",
-    backgroundColor: "#e8f1e4",
-    color: "#21553a",
-    fontWeight: "700",
-  },
   statRow: {
     display: "flex",
     justifyContent: "space-between",

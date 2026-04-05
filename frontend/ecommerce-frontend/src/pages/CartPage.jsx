@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import styles from "../styles/cartPageStyles";
+import LoadingState from "../components/LoadingState";
+import ErrorBanner from "../components/ErrorBanner";
+import EmptyState from "../components/EmptyState";
 
 function formatPrice(price) {
   return new Intl.NumberFormat("en-US", {
@@ -50,7 +53,7 @@ export default function CartPage() {
   };
 
   if (isLoading) {
-    return <p style={styles.status}>Loading your cart...</p>;
+    return <LoadingState message="Loading your cart..." />;
   }
 
   return (
@@ -63,16 +66,15 @@ export default function CartPage() {
         </p>
       </section>
 
-      {error && <p style={styles.error}>{error}</p>}
+      <ErrorBanner message={error} />
 
       {items.length === 0 ? (
-        <section style={styles.emptyState}>
-          <h2 style={styles.emptyTitle}>Your cart is empty</h2>
-          <p style={styles.emptyText}>Browse products and add something you would love to buy.</p>
-          <Link to="/products" style={styles.primaryLink}>
-            Explore products
-          </Link>
-        </section>
+        <EmptyState
+          title="Your cart is empty"
+          description="Browse products and add something you would love to buy."
+          actionLabel="Explore products"
+          actionTo="/products"
+        />
       ) : (
         <section style={styles.layout}>
           <div style={styles.itemsPanel}>

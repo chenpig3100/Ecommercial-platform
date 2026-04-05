@@ -3,6 +3,10 @@ import { Link } from "react-router-dom";
 import { getSellerOrders } from "../api/orders";
 import { useAuth } from "../context/AuthContext";
 import sellerStyles from "../styles/sellerPageStyles";
+import LoadingState from "../components/LoadingState";
+import ErrorBanner from "../components/ErrorBanner";
+import EmptyState from "../components/EmptyState";
+import StatusBadge from "../components/StatusBadge";
 
 function formatPrice(price) {
   return new Intl.NumberFormat("en-US", {
@@ -72,12 +76,15 @@ export default function SellerOrdersPage() {
           </select>
         </div>
 
-        {error && <p style={sellerStyles.error}>{error}</p>}
+        <ErrorBanner message={error} />
 
         {isLoading ? (
-          <p style={sellerStyles.status}>Loading seller orders...</p>
+          <LoadingState message="Loading seller orders..." />
         ) : orders.length === 0 ? (
-          <p style={sellerStyles.status}>No seller orders match this filter yet.</p>
+          <EmptyState
+            title="No seller orders yet"
+            description="Seller orders will appear here once customers check out products from your storefront."
+          />
         ) : (
           <div style={sellerStyles.list}>
             {orders.map((order) => (
@@ -88,9 +95,7 @@ export default function SellerOrdersPage() {
                 <div style={sellerStyles.productBody}>
                   <div style={sellerStyles.productMeta}>
                     <span style={sellerStyles.categoryBadge}>Parent order #{order.orderId}</span>
-                    <span style={{ ...sellerStyles.statusBadge, ...sellerStyles.statusActive }}>
-                      {order.status}
-                    </span>
+                    <StatusBadge status={order.status} />
                   </div>
 
                   <h3 style={sellerStyles.productTitle}>Seller order #{order.id}</h3>

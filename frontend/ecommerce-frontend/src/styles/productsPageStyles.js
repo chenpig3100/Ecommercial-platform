@@ -100,10 +100,13 @@ const productsPageStyles = {
   },
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    justifyContent: "start",
     gap: "1.25rem",
   },
   card: {
+    width: "100%",
+    maxWidth: "260px",
     overflow: "hidden",
     borderRadius: "24px",
     backgroundColor: "white",

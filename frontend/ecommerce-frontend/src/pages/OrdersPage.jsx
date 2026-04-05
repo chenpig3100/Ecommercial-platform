@@ -3,6 +3,10 @@ import { Link } from "react-router-dom";
 import { getMyOrders } from "../api/orders";
 import { useAuth } from "../context/AuthContext";
 import styles from "../styles/ordersPageStyles";
+import LoadingState from "../components/LoadingState";
+import ErrorBanner from "../components/ErrorBanner";
+import EmptyState from "../components/EmptyState";
+import StatusBadge from "../components/StatusBadge";
 
 function formatPrice(price) {
   return new Intl.NumberFormat("en-US", {
@@ -43,7 +47,7 @@ export default function OrdersPage() {
   }, [token]);
 
   if (isLoading) {
-    return <p style={styles.status}>Loading your orders...</p>;
+    return <LoadingState message="Loading your orders..." />;
   }
 
   return (
@@ -57,16 +61,15 @@ export default function OrdersPage() {
         </p>
       </section>
 
-      {error && <p style={styles.error}>{error}</p>}
+      <ErrorBanner message={error} />
 
       {!error && orders.length === 0 ? (
-        <section style={styles.emptyState}>
-          <h2 style={styles.emptyTitle}>No orders yet</h2>
-          <p style={styles.emptyText}>Once you complete checkout, your orders will appear here.</p>
-          <Link to="/products" style={styles.primaryLink}>
-            Start shopping
-          </Link>
-        </section>
+        <EmptyState
+          title="No orders yet"
+          description="Once you complete checkout, your orders will appear here."
+          actionLabel="Start shopping"
+          actionTo="/products"
+        />
       ) : (
         <section style={styles.list}>
           {orders.map((order) => (
@@ -76,7 +79,7 @@ export default function OrdersPage() {
                   <p style={styles.orderNumber}>Order #{order.id}</p>
                   <p style={styles.orderMeta}>Placed {formatDate(order.createdAtUtc)}</p>
                 </div>
-                <span style={styles.statusBadge}>{order.status}</span>
+                <StatusBadge status={order.status} />
               </div>
 
               <div style={styles.statRow}>
@@ -88,7 +91,7 @@ export default function OrdersPage() {
                 {order.sellerOrders.map((sellerOrder) => (
                   <div key={sellerOrder.id} style={styles.sellerChip}>
                     <span>Seller order #{sellerOrder.id}</span>
-                    <strong>{sellerOrder.status}</strong>
+                    <StatusBadge status={sellerOrder.status} />
                   </div>
                 ))}
               </div>

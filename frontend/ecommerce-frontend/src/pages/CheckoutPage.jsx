@@ -4,12 +4,40 @@ import { checkout } from "../api/orders";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import styles from "../styles/checkoutPageStyles";
+import { normalizeFieldErrors } from "../utils/formErrors";
 
 function formatPrice(price) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
   }).format(price);
+}
+
+function validateCheckoutForm(form) {
+  const errors = {};
+
+  if (!form.recipientName.trim()) {
+    errors.recipientName = "Recipient name is required.";
+  } else if (form.recipientName.trim().length < 2) {
+    errors.recipientName = "Recipient name must be at least 2 characters.";
+  }
+
+  const normalizedPhone = form.phoneNumber.trim();
+  if (!normalizedPhone) {
+    errors.phoneNumber = "Phone number is required.";
+  } else if (normalizedPhone.length < 8) {
+    errors.phoneNumber = "Phone number must be at least 8 characters.";
+  } else if (!/^[+\d\s()-]+$/.test(normalizedPhone)) {
+    errors.phoneNumber = "Phone number can only contain digits and phone symbols.";
+  }
+
+  if (!form.shippingAddress.trim()) {
+    errors.shippingAddress = "Shipping address is required.";
+  } else if (form.shippingAddress.trim().length < 10) {
+    errors.shippingAddress = "Shipping address must be at least 10 characters.";
+  }
+
+  return errors;
 }
 
 export default function CheckoutPage() {
@@ -22,6 +50,7 @@ export default function CheckoutPage() {
     shippingAddress: "",
   });
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -37,16 +66,37 @@ export default function CheckoutPage() {
       ...current,
       [name]: value,
     }));
+    setFieldErrors((current) => {
+      if (!current[name]) {
+        return current;
+      }
+
+      const next = { ...current };
+      delete next[name];
+      return next;
+    });
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
     setSuccessMessage("");
+    const validationErrors = validateCheckoutForm(form);
+    if (Object.keys(validationErrors).length > 0) {
+      setFieldErrors(validationErrors);
+      return;
+    }
+
+    setFieldErrors({});
     setIsSubmitting(true);
 
     try {
-      const order = await checkout(token, form);
+      const payload = {
+        recipientName: form.recipientName.trim(),
+        phoneNumber: form.phoneNumber.trim(),
+        shippingAddress: form.shippingAddress.trim(),
+      };
+      const order = await checkout(token, payload);
       await refreshCart().catch(() => {
         // Ignore refresh errors here so we can still navigate to the created order.
       });
@@ -59,6 +109,7 @@ export default function CheckoutPage() {
         });
       }
 
+      setFieldErrors(normalizeFieldErrors(err.errors));
       setError(err.message);
     } finally {
       setIsSubmitting(false);
@@ -107,10 +158,16 @@ export default function CheckoutPage() {
               name="recipientName"
               value={form.recipientName}
               onChange={handleChange}
-              style={styles.input}
+              style={{
+                ...styles.input,
+                ...(fieldErrors.recipientName ? styles.inputError : {}),
+              }}
               maxLength={120}
               required
             />
+            {fieldErrors.recipientName && (
+              <p style={styles.fieldError}>{fieldErrors.recipientName}</p>
+            )}
           </label>
 
           <label style={styles.field}>
@@ -120,10 +177,16 @@ export default function CheckoutPage() {
               name="phoneNumber"
               value={form.phoneNumber}
               onChange={handleChange}
-              style={styles.input}
+              style={{
+                ...styles.input,
+                ...(fieldErrors.phoneNumber ? styles.inputError : {}),
+              }}
               maxLength={40}
               required
             />
+            {fieldErrors.phoneNumber && (
+              <p style={styles.fieldError}>{fieldErrors.phoneNumber}</p>
+            )}
           </label>
 
           <label style={styles.field}>
@@ -132,11 +195,17 @@ export default function CheckoutPage() {
               name="shippingAddress"
               value={form.shippingAddress}
               onChange={handleChange}
-              style={styles.textarea}
+              style={{
+                ...styles.textarea,
+                ...(fieldErrors.shippingAddress ? styles.inputError : {}),
+              }}
               rows="5"
               maxLength={300}
               required
             />
+            {fieldErrors.shippingAddress && (
+              <p style={styles.fieldError}>{fieldErrors.shippingAddress}</p>
+            )}
           </label>
 
           <button type="submit" style={styles.submitButton} disabled={isSubmitting}>

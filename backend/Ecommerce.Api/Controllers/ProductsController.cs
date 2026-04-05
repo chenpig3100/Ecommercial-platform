@@ -1,5 +1,6 @@
 using Ecommerce.Api.Data;
 using Ecommerce.Api.DTOs;
+using Ecommerce.Api.Infrastructure.Errors;
 using Ecommerce.Api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -45,7 +46,7 @@ public class ProductsController : ControllerBase
 
         if (product is null)
         {
-            return NotFound(new { message = $"Product {id} was not found." });
+            return this.ApiNotFound($"Product {id} was not found.");
         }
 
         return Ok(product);
@@ -73,7 +74,7 @@ public class ProductsController : ControllerBase
         var userId = GetCurrentUserId();
         if (userId is null)
         {
-            return Unauthorized(new { message = "User identity is missing." });
+            return this.ApiUnauthorized("User identity is missing.");
         }
 
         var productsQuery = ApplyProductFilters(
@@ -101,12 +102,12 @@ public class ProductsController : ControllerBase
 
         if (product is null)
         {
-            return NotFound(new { message = $"Product {id} was not found." });
+            return this.ApiNotFound($"Product {id} was not found.");
         }
 
         if (!CanManageProduct(product))
         {
-            return Forbid();
+            return this.ApiForbidden("You do not have permission to manage this product.");
         }
 
         return Ok(product);
@@ -119,7 +120,7 @@ public class ProductsController : ControllerBase
         var userId = GetCurrentUserId();
         if (userId is null)
         {
-            return Unauthorized(new { message = "User identity is missing." });
+            return this.ApiUnauthorized("User identity is missing.");
         }
 
         var product = new Product
@@ -147,12 +148,12 @@ public class ProductsController : ControllerBase
 
         if (product is null)
         {
-            return NotFound(new { message = $"Product {id} was not found." });
+            return this.ApiNotFound($"Product {id} was not found.");
         }
 
         if (!CanManageProduct(product))
         {
-            return Forbid();
+            return this.ApiForbidden("You do not have permission to manage this product.");
         }
 
         product.Name = dto.Name.Trim();
@@ -175,12 +176,12 @@ public class ProductsController : ControllerBase
 
         if (product is null)
         {
-            return NotFound(new { message = $"Product {id} was not found." });
+            return this.ApiNotFound($"Product {id} was not found.");
         }
 
         if (!CanManageProduct(product))
         {
-            return Forbid();
+            return this.ApiForbidden("You do not have permission to manage this product.");
         }
 
         _context.Products.Remove(product);

@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Ecommerce.Api.Data;
 using Ecommerce.Api.DTOs;
+using Ecommerce.Api.Infrastructure.Errors;
 using Ecommerce.Api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -37,12 +38,12 @@ public class CartController : ControllerBase
 
         if (product is null || !product.IsActive)
         {
-            return NotFound(new { message = $"Product {dto.ProductId} was not found." });
+            return this.ApiNotFound($"Product {dto.ProductId} was not found.");
         }
 
         if (product.Stock < dto.Quantity)
         {
-            return BadRequest(new { message = $"Only {product.Stock} item(s) are available in stock." });
+            return this.ApiBadRequest($"Only {product.Stock} item(s) are available in stock.");
         }
 
         var cart = await GetOrCreateCartAsync(trackForUpdate: true);
@@ -62,7 +63,7 @@ public class CartController : ControllerBase
             var newQuantity = existingItem.Quantity + dto.Quantity;
             if (product.Stock < newQuantity)
             {
-                return BadRequest(new { message = $"Only {product.Stock} item(s) are available in stock." });
+                return this.ApiBadRequest($"Only {product.Stock} item(s) are available in stock.");
             }
 
             existingItem.Quantity = newQuantity;
@@ -84,7 +85,7 @@ public class CartController : ControllerBase
 
         if (cartItem is null)
         {
-            return NotFound(new { message = $"Cart item {itemId} was not found." });
+            return this.ApiNotFound($"Cart item {itemId} was not found.");
         }
 
         var product = await _context.Products
@@ -93,12 +94,12 @@ public class CartController : ControllerBase
 
         if (product is null || !product.IsActive)
         {
-            return BadRequest(new { message = "This product is no longer available." });
+            return this.ApiBadRequest("This product is no longer available.");
         }
 
         if (product.Stock < dto.Quantity)
         {
-            return BadRequest(new { message = $"Only {product.Stock} item(s) are available in stock." });
+            return this.ApiBadRequest($"Only {product.Stock} item(s) are available in stock.");
         }
 
         cartItem.Quantity = dto.Quantity;
@@ -119,7 +120,7 @@ public class CartController : ControllerBase
 
         if (cartItem is null)
         {
-            return NotFound(new { message = $"Cart item {itemId} was not found." });
+            return this.ApiNotFound($"Cart item {itemId} was not found.");
         }
 
         _context.CartItems.Remove(cartItem);

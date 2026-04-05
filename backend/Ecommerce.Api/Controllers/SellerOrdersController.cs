@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Ecommerce.Api.Data;
 using Ecommerce.Api.DTOs;
+using Ecommerce.Api.Infrastructure.Errors;
 using Ecommerce.Api.Mappings;
 using Ecommerce.Api.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -27,7 +28,7 @@ public class SellerOrdersController : ControllerBase
         var sellerId = GetCurrentUserId();
         if (string.IsNullOrWhiteSpace(sellerId))
         {
-            return Unauthorized(new { message = "User identity is missing." });
+            return this.ApiUnauthorized("User identity is missing.");
         }
 
         var sellerOrdersQuery = BuildAccessibleSellerOrdersQuery(sellerId);
@@ -51,7 +52,7 @@ public class SellerOrdersController : ControllerBase
         var sellerId = GetCurrentUserId();
         if (string.IsNullOrWhiteSpace(sellerId))
         {
-            return Unauthorized(new { message = "User identity is missing." });
+            return this.ApiUnauthorized("User identity is missing.");
         }
 
         var sellerOrder = await BuildAccessibleSellerOrdersQuery(sellerId)
@@ -59,7 +60,7 @@ public class SellerOrdersController : ControllerBase
 
         if (sellerOrder is null)
         {
-            return NotFound(new { message = $"Seller order {id} was not found." });
+            return this.ApiNotFound($"Seller order {id} was not found.");
         }
 
         return Ok(OrderDtoMapper.MapSellerOrderDto(sellerOrder));
@@ -71,7 +72,7 @@ public class SellerOrdersController : ControllerBase
         var sellerId = GetCurrentUserId();
         if (string.IsNullOrWhiteSpace(sellerId))
         {
-            return Unauthorized(new { message = "User identity is missing." });
+            return this.ApiUnauthorized("User identity is missing.");
         }
 
         var sellerOrder = await _context.SellerOrders
@@ -82,21 +83,19 @@ public class SellerOrdersController : ControllerBase
 
         if (sellerOrder is null)
         {
-            return NotFound(new { message = $"Seller order {id} was not found." });
+            return this.ApiNotFound($"Seller order {id} was not found.");
         }
 
         if (!CanAccessSellerOrder(sellerOrder, sellerId))
         {
-            return Forbid();
+            return this.ApiForbidden("You do not have permission to access this seller order.");
         }
 
         var normalizedStatus = OrderStatus.Normalize(dto.Status);
         if (!OrderStatus.CanTransition(sellerOrder.Status, normalizedStatus))
         {
-            return BadRequest(new
-            {
-                message = $"Order status cannot change from {sellerOrder.Status} to {normalizedStatus}."
-            });
+            return this.ApiBadRequest(
+                $"Order status cannot change from {sellerOrder.Status} to {normalizedStatus}.");
         }
 
         sellerOrder.Status = normalizedStatus;

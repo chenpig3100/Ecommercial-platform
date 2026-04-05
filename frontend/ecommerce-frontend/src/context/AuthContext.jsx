@@ -50,6 +50,7 @@ export function AuthProvider({ children }) {
   };
   const isBuyer = hasRole("Buyer");
   const isSeller = hasAnyRole(["Seller", "Admin"]);
+  const isAdmin = hasRole("Admin");
 
   return (
     <AuthContext.Provider
@@ -62,6 +63,7 @@ export function AuthProvider({ children }) {
         hasAnyRole,
         isBuyer,
         isSeller,
+        isAdmin,
         login,
         logout,
       }}

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Ecommerce.Api.Data;
 using Ecommerce.Api.DTOs;
+using Ecommerce.Api.Infrastructure.Errors;
 using Ecommerce.Api.Models;
 using Ecommerce.Api.Services;
 
@@ -28,7 +29,12 @@ namespace Ecommerce.Api.Controllers
             var existingUser = await _userManager.FindByEmailAsync(dto.Email);
             if (existingUser != null)
             {
-                return BadRequest(new { message = "Email already exists." });
+                return this.ApiBadRequest(
+                    "Email already exists.",
+                    new Dictionary<string, string[]>
+                    {
+                        ["email"] = ["Email already exists."]
+                    });
             }
 
             var user = new ApplicationUser
@@ -41,19 +47,24 @@ namespace Ecommerce.Api.Controllers
 
             if (!result.Succeeded)
             {
-                return BadRequest(new
-                {
-                    errors = result.Errors.Select(e => e.Description)
-                });
+                return this.ApiBadRequest(
+                    "Registration failed.",
+                    new Dictionary<string, string[]>
+                    {
+                        ["password"] = result.Errors.Select(error => error.Description).ToArray()
+                    });
             }
 
             var roleResult = await _userManager.AddToRoleAsync(user, IdentitySeeder.BuyerRole);
             if (!roleResult.Succeeded)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new
-                {
-                    errors = roleResult.Errors.Select(e => e.Description)
-                });
+                return this.ApiError(
+                    StatusCodes.Status500InternalServerError,
+                    "Failed to assign the default role.",
+                    new Dictionary<string, string[]>
+                    {
+                        ["roles"] = roleResult.Errors.Select(error => error.Description).ToArray()
+                    });
             }
 
             return Ok(new { message = "User registered successfully." });
@@ -65,13 +76,13 @@ namespace Ecommerce.Api.Controllers
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
             {
-                return Unauthorized(new { message = "Invalid email or password." });
+                return this.ApiUnauthorized("Invalid email or password.");
             }
 
             var validPassword = await _userManager.CheckPasswordAsync(user, dto.Password);
             if (!validPassword)
             {
-                return Unauthorized(new { message = "Invalid email or password." });
+                return this.ApiUnauthorized("Invalid email or password.");
             }
 
             var roles = await _userManager.GetRolesAsync(user);
