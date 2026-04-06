@@ -19,6 +19,8 @@ namespace Ecommerce.Api.Services
         public string CreateToken(ApplicationUser user, IList<string> roles)
         {
             var jwtSettings = _configuration.GetSection("Jwt");
+            var jwtKey = jwtSettings["Key"] ?? throw new InvalidOperationException(
+                "Jwt:Key is not configured.");
 
             var claims = new List<Claim>
             {
@@ -34,7 +36,7 @@ namespace Ecommerce.Api.Services
             }
 
             var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtSettings["Key"]!)
+                Encoding.UTF8.GetBytes(jwtKey)
             );
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

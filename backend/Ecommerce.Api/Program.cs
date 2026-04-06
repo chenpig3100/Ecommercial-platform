@@ -11,9 +11,14 @@ using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var allowedOrigins = GetAllowedOrigins(builder.Configuration);
+var defaultConnection = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException(
+        "Connection string 'DefaultConnection' is not configured.");
+
 // DB
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(defaultConnection));
 
 // Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -63,10 +68,26 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy
-            .WithOrigins("http://localhost:5173")
-            .AllowAnyHeader()
-            .AllowAnyMethod();
+        if (allowedOrigins.Length > 0)
+        {
+            policy
+                .WithOrigins(allowedOrigins)
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+            return;
+        }
+
+        if (builder.Environment.IsDevelopment())
+        {
+            policy
+                .WithOrigins("http://localhost:5173")
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+            return;
+        }
+
+        throw new InvalidOperationException(
+            "CORS origins are not configured. Set Cors__AllowedOrigins in configuration.");
     });
 });
 
@@ -88,6 +109,7 @@ app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapGet("/health", () => Results.Ok(new { status = "Healthy" }));
 app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
@@ -97,3 +119,20 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
+
+static string[] GetAllowedOrigins(IConfiguration configuration)
+{
+    var configuredOrigins = configuration["Cors:AllowedOrigins"];
+    if (!string.IsNullOrWhiteSpace(configuredOrigins))
+    {
+        return configuredOrigins
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    }
+
+    return configuration
+        .GetSection("Cors:AllowedOrigins")
+        .Get<string[]>()
+        ?.Where(origin => !string.IsNullOrWhiteSpace(origin))
+        .ToArray()
+        ?? Array.Empty<string>();
+}
