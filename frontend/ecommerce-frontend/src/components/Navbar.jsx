@@ -65,7 +65,7 @@ export default function Navbar() {
             </button>
             {openMenu === "buyer" && (
               <div style={styles.menuPanel}>
-                <div style={styles.menuTitle}>Buyer tools</div>
+                <div style={styles.menuTitle}>My account</div>
                 <Link to="/dashboard" style={styles.menuLink} onClick={closeMenu}>Dashboard</Link>
                 <Link to="/orders" style={styles.menuLink} onClick={closeMenu}>My Orders</Link>
               </div>
@@ -84,7 +84,7 @@ export default function Navbar() {
             </button>
             {openMenu === "seller" && (
               <div style={styles.menuPanel}>
-                <div style={styles.menuTitle}>Seller workspace</div>
+                <div style={styles.menuTitle}>Seller account</div>
                 <Link to="/seller/dashboard" style={styles.menuLink} onClick={closeMenu}>
                   Dashboard
                 </Link>
@@ -110,7 +110,7 @@ export default function Navbar() {
             </button>
             {openMenu === "admin" && (
               <div style={styles.menuPanel}>
-                <div style={styles.menuTitle}>Admin tools</div>
+                <div style={styles.menuTitle}>Admin account</div>
                 <Link to="/admin/dashboard" style={styles.menuLink} onClick={closeMenu}>
                   Dashboard
                 </Link>

@@ -86,7 +86,7 @@ export default function LoginPage() {
       <section style={styles.card}>
         <h1 style={styles.title}>Welcome back</h1>
         <p style={styles.subtitle}>
-          Sign in to continue shopping, manage your storefront, or open the admin workspace.
+          Sign in to continue shopping, manage your store, or review platform activity.
         </p>
 
         <form onSubmit={handleSubmit} style={styles.form}>

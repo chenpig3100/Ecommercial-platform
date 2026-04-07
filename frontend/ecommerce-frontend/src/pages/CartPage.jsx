@@ -59,7 +59,7 @@ export default function CartPage() {
   return (
     <main style={styles.page}>
       <section style={styles.hero}>
-        <p style={styles.eyebrow}>Sprint 5 Cart Module</p>
+        <p style={styles.eyebrow}>Shopping Cart</p>
         <h1 style={styles.title}>Review your bag before heading to checkout.</h1>
         <p style={styles.subtitle}>
           Update quantities, remove products, and keep an eye on the latest synced prices.

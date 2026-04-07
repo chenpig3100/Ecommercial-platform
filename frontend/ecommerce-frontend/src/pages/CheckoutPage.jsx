@@ -137,7 +137,7 @@ export default function CheckoutPage() {
   return (
     <main style={styles.page}>
       <section style={styles.hero}>
-        <p style={styles.eyebrow}>Sprint 5 Checkout</p>
+        <p style={styles.eyebrow}>Secure Checkout</p>
         <h1 style={styles.title}>Confirm delivery details and place your order.</h1>
         <p style={styles.subtitle}>
           Prices are rechecked during checkout so you always order with the latest product data.

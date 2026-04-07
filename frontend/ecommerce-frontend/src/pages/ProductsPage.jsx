@@ -83,7 +83,7 @@ export default function ProductsPage() {
   return (
     <main style={styles.page}>
       <section style={styles.hero}>
-        <p style={styles.eyebrow}>Sprint 3 Product Module</p>
+        <p style={styles.eyebrow}>Product Catalog</p>
         <h1 style={styles.title}>Discover products with category and search built in.</h1>
         <p style={styles.subtitle}>
           Browse the catalog, filter by category, and open any item for full details.

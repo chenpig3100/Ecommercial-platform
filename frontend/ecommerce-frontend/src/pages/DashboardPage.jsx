@@ -23,9 +23,9 @@ export default function DashboardPage() {
 
   return (
     <div style={styles.container}>
-      <h2>Dashboard</h2>
-      <p>Welcome, {userEmail}</p>
-      <p>Roles: {roles.length ? roles.join(", ") : "No roles assigned"}</p>
+      <h2>My Account</h2>
+      <p>Welcome back, {userEmail}</p>
+      <p>Account type: {roles.length ? roles.join(", ") : "Customer"}</p>
 
       {message && <p style={styles.success}>{message}</p>}
       {error && <p style={styles.error}>{error}</p>}

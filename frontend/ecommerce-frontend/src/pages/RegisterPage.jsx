@@ -74,7 +74,7 @@ export default function RegisterPage() {
 
     try {
       const data = await registerUser(form.email.trim(), form.password);
-      setMessage(data.message || "Register successful");
+      setMessage(data.message || "Account created successfully.");
 
       setTimeout(() => {
         navigate("/login");
@@ -92,8 +92,8 @@ export default function RegisterPage() {
       <section style={styles.card}>
         <h1 style={styles.title}>Create your account</h1>
         <p style={styles.subtitle}>
-          Sign up as a buyer to start shopping. We will validate your details before the account is
-          created.
+          Create a customer account to save your details, manage orders, and enjoy a smoother
+          checkout experience.
         </p>
 
         <form onSubmit={handleSubmit} style={styles.form}>
@@ -151,7 +151,7 @@ export default function RegisterPage() {
           </label>
 
           <button type="submit" style={styles.button} disabled={isSubmitting}>
-            {isSubmitting ? "Creating account..." : "Register"}
+            {isSubmitting ? "Creating account..." : "Create account"}
           </button>
         </form>
 
